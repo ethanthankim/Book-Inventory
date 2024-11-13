@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import '../App.css';
+import TextInput from './TextInput';
+import SelectInput from './SelectInput';
+
 import Button from '@mui/material/Button';
 import axios from 'axios';
 import Table from '@mui/material/Table';
@@ -11,11 +14,6 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
 
 const ViewForm = () => {
     const path = 'http://localhost:5001'
@@ -29,6 +27,7 @@ const ViewForm = () => {
     const [ascending, setAscending] = useState(true);
     const [orderBy, setOrderBy] = useState('');
 
+    /* API Calls */
     useEffect(() => {
         const fetchGenres = async () => {
             try {
@@ -41,21 +40,6 @@ const ViewForm = () => {
         };
         fetchGenres();
     }, []);
-    
-    const handleChange = (e) => {
-        const {name, value} = e.target
-        setFilters({
-            ...filters,
-            [name]: value
-        })
-    };
-    const handleSelect = (e) => {
-        console.log('selected', e.target);
-        setFilters({
-            ...filters,
-            genre: e.target.value
-        })
-    };
     const getBooks = async(title, author, genre, order, asc) => {
         try {
             const response = await axios.get(`${path}/viewBooks`, {
@@ -67,6 +51,21 @@ const ViewForm = () => {
             console.log('Error fetching books:', error)
         }
     }
+    
+    /* Handler Functions */
+    const handleChange = (e) => {
+        const {name, value} = e.target
+        setFilters({
+            ...filters,
+            [name]: value
+        })
+    };
+    const handleSelect = (e) => {
+        setFilters({
+            ...filters,
+            genre: e.target.value
+        })
+    };
     const handleSubmit = (e) => {
         e.preventDefault();
         getBooks(filters.title, filters.author, filters.genre);
@@ -89,34 +88,20 @@ const ViewForm = () => {
         // Call getBooks directly with the new order values
         getBooks(filters.title, filters.author, filters.genre, newOrderBy, newAscending);
     };
-    
+    function createHeading(name, label, justify) {
+        return {
+            'name': name,
+            'label': label,
+            'justify': justify
+        }
+    }
     
     const headings = [
-        {
-            'heading': 'title',
-            'label': 'Title',
-            'justify':'left'
-        },
-        {
-            'heading': 'author',
-            'label':'Author',
-            'justify':'right'
-        },
-        {
-            'heading': 'genre',
-            'label':'Genre',
-            'justify':'right'
-        },
-        {
-            'heading': 'publication_date',
-            'label':'Publication Date',
-            'justify':'right'
-        },
-        {
-            'heading': 'isbn',
-            'label':'ISBN',
-            'justify':'right'
-        }
+        createHeading('title', 'Title', 'left'),
+        createHeading('author','Author', 'right'),
+        createHeading('genre','Genre','right'),
+        createHeading('publication_date','Publication Date', 'right'),
+        createHeading('isbn','ISBN','right')
     ]
     return (
         <div>
@@ -128,35 +113,22 @@ const ViewForm = () => {
                 className='inputs-bar'
             >
                 <Box className='inputs'>
-                    <TextField 
-                        className='input-field'
-                        name='title' 
-                        label='Title' 
-                        onChange={handleChange} 
-                        variant='outlined'
+                    <TextInput
+                        name={headings[0].heading}
+                        label={headings[0].label}
+                        change={handleChange}
                         value={filters.title} />
-                    <TextField 
-                        className='input-field'
-                        name='author' 
-                        label='Author' 
-                        onChange={handleChange} 
-                        variant='outlined' 
+                    <TextInput
+                        name={headings[1].heading}
+                        label={headings[1].label}
+                        change={handleChange}
                         value={filters.author} />
-                    <Box className='input-field'>
-                        <FormControl fullWidth>
-                            <InputLabel>Genre</InputLabel>
-                            <Select
-                                value={filters.genre}
-                                label='Genre'
-                                onChange={handleSelect}
-                            >
-                                <MenuItem key='None' value=''>--None--</MenuItem>
-                                {genres.map((g)=> (
-                                    <MenuItem key={g} value={g}>{g}</MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Box>
+                    <SelectInput
+                        options={genres}
+                        label={headings[2].label}
+                        change={handleSelect}
+                        value={filters.genre}
+                    />
                 </Box>
                 <Box className='inputs'>
                     <Button type='submit' variant='contained'>
@@ -173,10 +145,10 @@ const ViewForm = () => {
                         <TableHead>
                             <TableRow>
                                 {headings.map((e) => (
-                                    <TableCell key={e.heading} align={e.justify}>
-                                        <Button onClick={() => sortBy(`${e.heading}`)}>
+                                    <TableCell key={e.name} align={e.justify}>
+                                        <Button onClick={() => sortBy(`${e.name}`)}>
                                             <TableSortLabel
-                                                active={orderBy === e.heading && orderBy !== ''}
+                                                active={orderBy === e.name && orderBy !== ''}
                                                 direction={ascending ? 'asc' : 'desc'}
                                             >
                                                 {e.label}

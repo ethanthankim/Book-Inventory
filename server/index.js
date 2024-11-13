@@ -75,7 +75,7 @@ app.get('/genres', (req, res) => {
     });
 });
 
-app.post('/books', (req, res) => {
+app.post('/addBook', (req, res) => {
     const { title, author, genre, publication_date, isbn } = req.body;
     const query = 'INSERT INTO Books (title, author, genre, publication_date, isbn) VALUES (?, ?, ?, ?, ?)';
     db.query(query, [title, author, genre, publication_date, isbn], (err, result) => {
