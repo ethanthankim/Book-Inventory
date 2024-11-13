@@ -1,0 +1,18 @@
+.inputs-bar {
+  margin: 50px;
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+}
+.inputs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.input-field {
+  width: 200px;
+}
+.data-table {
+  margin: 50px;
+  overflow: hidden;
+}
