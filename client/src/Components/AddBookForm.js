@@ -9,6 +9,9 @@ import DateInput from './DateInput';
 
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid2';
+import { Typography } from '@mui/material';
+import {Dialog, DialogContent, DialogActions } from '@mui/material';
 
 
 const AddBookForm = () => {
@@ -21,6 +24,9 @@ const AddBookForm = () => {
         isbn:''
     });
     const [genres, setGenres] = useState([]);
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState(false);
+    const [open, setOpen] = useState(false);
 
     /* API Calls */
     useEffect(() => {
@@ -44,10 +50,16 @@ const AddBookForm = () => {
                 publication_date: book.date,
                 isbn: book.isbn
             });
+            setMessage(response.data);
+            setError(false);
             console.log('Book added successfully:', response.data);
             clearInputs();
         } catch (error) {
             console.error('Error adding book:', error);
+            setMessage(error.response.data);
+            setError(true);
+        } finally {
+            setOpen(true);
         }
     };
 
@@ -55,12 +67,18 @@ const AddBookForm = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        if (!book.title || !book.author || !book.date || !book.isbn) {
+            setMessage('Missing one or more required fields.');
+            setError(true);
+            setOpen(true);
+            return;
+        }
+
         console.log('Submitted', book);
         addBook();
     }
     const handleChange = (e) => {
         const {name, value} = e.target
-        console.log(name, value, e);
         setBook({
             ...book,
             [name]: value
@@ -79,6 +97,9 @@ const AddBookForm = () => {
             date: formattedDate
         })
     };
+    const handleClose = () => {
+        setOpen(false);
+    }
     const clearInputs = () => {
         setBook({
             title:'',
@@ -97,32 +118,51 @@ const AddBookForm = () => {
                 onSubmit={handleSubmit}
                 className='inputs-bar'
             >
-                <Box className='inputs'>
-                    <TextInput
-                        name='title' 
-                        label='Title'
-                        change={handleChange}
-                        value={book.title}/>
-                    <TextInput
-                        name='author' 
-                        label='Author'
-                        change={handleChange}
-                        value={book.author}/>
-                    <SelectInput
-                        options={genres}
-                        label='Genre'
-                        value={book.genre}
-                        change={handleSelect} />
-                    <DateInput
-                        change={handleDate}
-                        label='Publication Date' />
-                    <TextInput
-                        name='isbn'
-                        label='ISBN'
-                        change={handleChange}
-                        value={book.isbn} />
-                </Box>
-                <Box className='inputs'>
+                <Grid 
+                    container 
+                    spacing={2} 
+                    className='inputs'
+                >
+                    <Grid size={6}>
+                        <TextInput
+                            name='title' 
+                            label='Title'
+                            required={true}
+                            change={handleChange}
+                            value={book.title}/>
+                    </Grid>
+                    <Grid size={6}>
+                        <TextInput
+                            name='author' 
+                            label='Author'
+                            required={true}
+                            change={handleChange}
+                            value={book.author}/>
+                    </Grid>
+                    <Grid size={4}>
+                        <SelectInput
+                            options={genres}
+                            label='Genre'
+                            value={book.genre}
+                            change={handleSelect} />
+                    </Grid>
+                    <Grid size={4}>
+                        <DateInput
+                            change={handleDate}
+                            required={true}
+                            value={book.date ? dayjs(book.date) : null}
+                            label='Publication Date' />
+                    </Grid>
+                    <Grid size={4}>
+                        <TextInput
+                            name='isbn'
+                            label='ISBN'
+                            required={true}
+                            change={handleChange}
+                            value={book.isbn} />
+                    </Grid>
+                </Grid>
+                <Box className='submit-buttons'>
                     <Button type='submit' variant='contained'>
                         Add Book
                     </Button>
@@ -130,6 +170,16 @@ const AddBookForm = () => {
                         Clear
                     </Button>
                 </Box>
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogContent>
+                        <Typography color={error ? 'error' : 'primary'} variant="body1">
+                            {message}
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose} color="primary">Close</Button>
+                    </DialogActions>
+                </Dialog>
             </Box>
         </div>
     );

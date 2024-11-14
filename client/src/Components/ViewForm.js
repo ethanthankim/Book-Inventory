@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import '../App.css';
+import dayjs from 'dayjs';
+import axios from 'axios';
 import TextInput from './TextInput';
 import SelectInput from './SelectInput';
+import DateInput from './DateInput';
+import AddBookForm from './AddBookForm';
 
 import Button from '@mui/material/Button';
-import axios from 'axios';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -14,6 +17,10 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid2';
+import { Toolbar, Typography, Tooltip, IconButton} from '@mui/material';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import AddIcon from '@mui/icons-material/Add';
 
 const ViewForm = () => {
     const path = 'http://localhost:5001'
@@ -21,11 +28,16 @@ const ViewForm = () => {
     const [filters, setFilters] = useState({
         title: "",
         author: "",
-        genre: ""
+        genre: "",
+        startDate:'',
+        endDate:'',
+        isbn:''
     });
     const [genres, setGenres] = useState([]);
     const [ascending, setAscending] = useState(true);
     const [orderBy, setOrderBy] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
+    const [showAddForm, setShowAddForm] = useState(false);
 
     /* API Calls */
     useEffect(() => {
@@ -40,10 +52,10 @@ const ViewForm = () => {
         };
         fetchGenres();
     }, []);
-    const getBooks = async(title, author, genre, order, asc) => {
+    const getBooks = async(title, author, genre, start, end, isbn, order, asc) => {
         try {
             const response = await axios.get(`${path}/viewBooks`, {
-                params: {title, author, genre, order, asc}
+                params: {title, author, genre, start, end ,isbn, order, asc}
             });
             console.log(response.data)
             setBooks(response.data)
@@ -66,15 +78,25 @@ const ViewForm = () => {
             genre: e.target.value
         })
     };
+    const handleDate = (date, name) => {
+        const formattedDate = dayjs(date.$d).format('YYYY-MM-DD');
+        setFilters({
+            ...filters,
+            [name]: formattedDate
+        })
+    };
     const handleSubmit = (e) => {
         e.preventDefault();
-        getBooks(filters.title, filters.author, filters.genre);
+        getBooks(filters.title, filters.author, filters.genre, filters.startDate, filters.endDate, filters.isbn);
     };
     const clearFilters = () => {
         setFilters({
             title:"",
             author:"",
-            genre:""
+            genre:"",
+            startDate:"",
+            endDate:"",
+            isbn:""
         })
         setOrderBy('');
     }
@@ -85,8 +107,8 @@ const ViewForm = () => {
         setOrderBy(newOrderBy);
         setAscending(newAscending);
         
-        // Call getBooks directly with the new order values
-        getBooks(filters.title, filters.author, filters.genre, newOrderBy, newAscending);
+        getBooks(filters.title, filters.author, filters.genre, filters.startDate,
+            filters.endDate, filters.isbn, newOrderBy, newAscending);
     };
     function createHeading(name, label, justify) {
         return {
@@ -95,7 +117,6 @@ const ViewForm = () => {
             'justify': justify
         }
     }
-    
     const headings = [
         createHeading('title', 'Title', 'left'),
         createHeading('author','Author', 'right'),
@@ -103,43 +124,137 @@ const ViewForm = () => {
         createHeading('publication_date','Publication Date', 'right'),
         createHeading('isbn','ISBN','right')
     ]
+    const exportTable = (type) => {
+        // type will be a string of either 'csv' or 'json'
+        if (books.length === 0) {
+            alert("No Data to export");
+            return;
+        }
+        let content;
+        let blob;
+
+        if (type === 'json') {
+            content = JSON.stringify(books, null, 2);
+            blob = new Blob([content], {type:"application/json"});
+        } else {
+            const headers = headings.map((h) => h.label);
+            const rows = books.map((book) => [
+                book.title,
+                book.author,
+                book.genre,
+                book.publication_date.slice(0,10),
+                book.isbn
+            ]);
+            const escapeCSV = (value) => `"${String(value).replace(/"/g, '""')}"`;
+    
+    
+            content = [
+                headers.map(escapeCSV).join(","),
+                ...rows.map((row) => row.map(escapeCSV).join(","))
+            ].join("\n");
+            blob = new Blob([content], {type:"text/csv;charset=utf-8"})
+        }
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `books.${type}`;
+        link.click();
+    }   
+
     return (
-        <div>
-            <Box
-                component='form'
-                autoComplete='off'
-                noValidate
-                onSubmit={handleSubmit}
-                className='inputs-bar'
-            >
-                <Box className='inputs'>
-                    <TextInput
-                        name={headings[0].heading}
-                        label={headings[0].label}
-                        change={handleChange}
-                        value={filters.title} />
-                    <TextInput
-                        name={headings[1].heading}
-                        label={headings[1].label}
-                        change={handleChange}
-                        value={filters.author} />
-                    <SelectInput
-                        options={genres}
-                        label={headings[2].label}
-                        change={handleSelect}
-                        value={filters.genre}
-                    />
-                </Box>
-                <Box className='inputs'>
-                    <Button type='submit' variant='contained'>
-                        View Books
-                    </Button>
-                    <Button onClick={clearFilters} variant='outlined'>
-                        Clear Filters
-                    </Button>
-                </Box>
-            </Box>
+        <div className='page'>
             <Paper className="data-table" elevation={8}>
+                <Toolbar className='toolbar'>
+                    <Typography variant='h4'>Book Inventory</Typography>
+                    <Box className='toolbar-icons'>
+                        <Tooltip title="Filter">
+                        <IconButton onClick={() => {
+                            setShowFilters((prev) => {
+                                if (!prev && showAddForm) setShowAddForm(false);  // hide AddForm if Filters are being shown
+                                return !prev;
+                            });
+                        }}>
+                                <FilterListIcon />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title='Add Book'>
+                            <IconButton onClick={() => {
+                                setShowAddForm((prev) => {
+                                    if (!prev && showFilters) setShowFilters(false);  // hide Filters if AddForm is being shown
+                                    return !prev;
+                                });
+                            }}>
+                                <AddIcon />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
+                </Toolbar>
+                {showFilters && (
+                    <Box
+                    component='form'
+                    autoComplete='off'
+                    noValidate
+                    onSubmit={handleSubmit}
+                    className='inputs-bar'
+                    >
+                        <Grid 
+                            container
+                            className='inputs'
+                            spacing={2}
+                        >
+                            <Grid size={4}>
+                                <TextInput
+                                    name={headings[0].name}
+                                    label={headings[0].label}
+                                    change={handleChange}
+                                    value={filters.title} />
+                            </Grid>
+                            <Grid size={4}>
+                                <TextInput
+                                    name={headings[1].name}
+                                    label={headings[1].label}
+                                    change={handleChange}
+                                    value={filters.author} />
+                            </Grid>
+                            <Grid size={4}>
+                                <SelectInput
+                                    options={genres}
+                                    label={headings[2].label}
+                                    change={handleSelect}
+                                    value={filters.genre}
+                                />
+                            </Grid>
+                            <Grid size={4}>
+                                <DateInput
+                                    change={(date) => handleDate(date, 'startDate')}
+                                    value={filters.startDate ? dayjs(filters.startDate) : null}
+                                    label='From' />
+                            </Grid>
+                            <Grid size={4}>
+                                <DateInput
+                                    change={(date) => handleDate(date, 'endDate')}
+                                    value={filters.endDate ? dayjs(filters.endDate) : null}
+                                    label='To' />
+                            </Grid>
+                            <Grid size={4}>
+                                <TextInput
+                                    name={headings[4].name}
+                                    label={headings[4].label}
+                                    change={handleChange}
+                                    value={filters.isbn} />
+                            </Grid>
+                        </Grid>
+                        <Box className='submit-buttons'>
+                            <Button type='submit' variant='contained'>
+                                View Books
+                            </Button>
+                            <Button onClick={clearFilters} variant='outlined'>
+                                Clear Filters
+                            </Button>
+                        </Box>
+                    </Box>
+                )}
+                {showAddForm && <AddBookForm />}
                 <TableContainer component={Paper} sx={{maxHeight: 400}}>
                     <Table stickyHeader>
                         <TableHead>
@@ -173,6 +288,15 @@ const ViewForm = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <Box className='export-container'>
+                    <Typography className='export-text'>Export to:</Typography>
+                    <Button variant='outlined' onClick={() => exportTable('csv')} className='export'>
+                        CSV
+                    </Button>
+                    <Button variant='outlined' onClick={() => exportTable('json')} className='export'>
+                        JSON
+                    </Button>
+                </Box>
             </Paper>
         </div>
     );

@@ -8,11 +8,13 @@ const TextInput = (props) => {
             label
             change
             value
+            required
         }
     */
     return (
         <TextField 
             className='input-field'
+            required={props.required || false}
             name={props.name} 
             label={props.label}
             onChange={props.change} 

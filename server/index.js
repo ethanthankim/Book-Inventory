@@ -40,16 +40,23 @@ app.get('/allBooks', (req, res) => {
     });
 });
 app.get('/viewBooks', (req, res) => {
-    console.log(req.query);
-    const {title, author, genre, order, asc} = req.query;
+    console.log("Request query", req.query);
+    const {title, author, genre, start, end, isbn, order, asc} = req.query;
     let query = `
         SELECT * FROM Books
         WHERE title LIKE "%${title}%"
         AND author LIKE "%${author}%"
+        AND isbn LIKE "%${isbn}%"
     `;
     if (genre) {
         query += `AND genre = "${genre}"`
     };
+    if (start) {
+        query += `AND publication_date >= "${start}"`
+    }
+    if (end) {
+        query += `AND publication_date <= "${end}"`
+    }
     if (order) {
         query += `ORDER BY ${order} ${asc ==='true' ? 'ASC' : 'DESC'}`
     }
@@ -79,7 +86,12 @@ app.post('/addBook', (req, res) => {
     const { title, author, genre, publication_date, isbn } = req.body;
     const query = 'INSERT INTO Books (title, author, genre, publication_date, isbn) VALUES (?, ?, ?, ?, ?)';
     db.query(query, [title, author, genre, publication_date, isbn], (err, result) => {
-        if (err) return res.status(500).send(err);
+        if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(409).send('A Book with this ISBN already exists.')
+            }
+            return res.status(500).send(err);
+        }
         res.status(201).send('Book added successfully');
     });
 });

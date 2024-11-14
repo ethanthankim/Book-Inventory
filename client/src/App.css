@@ -1,15 +1,25 @@
 .inputs-bar {
   margin: 50px;
   display: flex;
-  justify-content: center;
-  gap: 50px;
+  gap: 40px;
+  align-items: center;
+  justify-self: center;
+  width: 85%;
+  background-color: lightblue;
 }
 .inputs {
   display: flex;
   gap: 10px;
+  width: 700px;
+  /* background-color: lightgreen; */
 }
 .input-field {
-  width: 200px;
+  width: 100%;
+}
+.submit-buttons {
+  display: flex;
+  margin-right: 10px;
+  gap: 10px;
 }
 /* .input-field, .date-picker-field {
   padding: 0;
@@ -17,7 +27,21 @@
   display: inline-block;
   vertical-align: middle;
 } */
+ .toolbar {
+  display: flex;
+  justify-content: space-between;
+ }
 .data-table {
   margin: 50px;
   overflow: hidden;
+}
+.export-container {
+  display: flex;
+  margin: 20px;
+  justify-content: right;
+  align-items: center;
+  gap: 10px;
+}
+.export-text {
+  padding-right: 10px;
 }
