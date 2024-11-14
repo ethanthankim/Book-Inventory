@@ -96,10 +96,6 @@ SELECT * FROM books
 WHERE publication_date >= '1990-01-01';
 
 -- @block
--- Make sure books with same isbn cannot be added
-INSERT INTO Books(title, author, genre, publication_date, isbn)
-VALUES ('Duplicate ISBN Test', 'John Doe', 'Test Genre', '2024-01-01', '9780451524935');
--- @block
 -- get list of distinct genres
 SELECT DISTINCT Genre FROM Books;
 
@@ -109,6 +105,7 @@ INSERT INTO Books(title, author, genre, publication_date, isbn)
 VALUES
    ('Animal Farm', 'George Orwell', 'Satire', '1945-08-17', '9780451526342'),
    ('The Great Gatsby', 'Mary Smith', 'Drama', '2023-07-15', '9781234567890');
+
 -- @block
 -- Make sure books with same isbn cannot be added
 INSERT INTO Books(title, author, genre, publication_date, isbn)
