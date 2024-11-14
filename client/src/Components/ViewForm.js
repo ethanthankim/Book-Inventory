@@ -7,6 +7,7 @@ import SelectInput from './SelectInput';
 import DateInput from './DateInput';
 import AddBookForm from './AddBookForm';
 
+import { createTheme, ThemeProvider } from '@mui/material';
 import Button from '@mui/material/Button';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -38,6 +39,40 @@ const ViewForm = () => {
     const [orderBy, setOrderBy] = useState('');
     const [showFilters, setShowFilters] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
+
+    const theme = createTheme({
+        palette: {
+            primary: {
+                main: 'rgb(0,180,0)'
+            },
+            secondary: {
+                main: 'rgba(140, 255, 140, 0.25)'
+            },
+        },
+        typography: {
+            h4: {
+                color: 'rgb(0,180,0)'
+            },
+            body2: {
+                color: 'rgb(0,180,0)'
+            }
+        },
+        components: {
+            MuiButton: {
+              variants: [
+                {
+                  props: { variant: 'contained' },
+                  style: {
+                    backgroundColor: 'rgb(120, 240, 120)',
+                    '&:hover': {
+                      backgroundColor: 'rgb(120, 225, 120)', 
+                    },
+                  },
+                },
+              ],
+            },
+          },
+      })
 
     /* API Calls */
     useEffect(() => {
@@ -87,7 +122,9 @@ const ViewForm = () => {
     };
     const handleSubmit = (e) => {
         e.preventDefault();
-        getBooks(filters.title, filters.author, filters.genre, filters.startDate, filters.endDate, filters.isbn);
+        setOrderBy('');
+        getBooks(filters.title, filters.author, filters.genre, 
+            filters.startDate, filters.endDate, filters.isbn, '');
     };
     const clearFilters = () => {
         setFilters({
@@ -162,7 +199,7 @@ const ViewForm = () => {
     }   
 
     return (
-        <div className='page'>
+        <ThemeProvider theme={theme}>
             <Paper className="data-table" elevation={8}>
                 <Toolbar className='toolbar'>
                     <Typography variant='h4'>Book Inventory</Typography>
@@ -245,22 +282,22 @@ const ViewForm = () => {
                             </Grid>
                         </Grid>
                         <Box className='submit-buttons'>
-                            <Button type='submit' variant='contained'>
+                            <Button className='submit-btn' type='submit' variant='contained'>
                                 View Books
                             </Button>
-                            <Button onClick={clearFilters} variant='outlined'>
+                            <Button className='submit-btn' onClick={clearFilters} variant='outlined'>
                                 Clear Filters
                             </Button>
                         </Box>
                     </Box>
                 )}
                 {showAddForm && <AddBookForm />}
-                <TableContainer component={Paper} sx={{maxHeight: 400}}>
+                <TableContainer component={Paper} sx={{maxHeight: 350}}>
                     <Table stickyHeader>
                         <TableHead>
                             <TableRow>
                                 {headings.map((e) => (
-                                    <TableCell key={e.name} align={e.justify}>
+                                    <TableCell className='table-head' key={e.name} align={e.justify}>
                                         <Button onClick={() => sortBy(`${e.name}`)}>
                                             <TableSortLabel
                                                 active={orderBy === e.name && orderBy !== ''}
@@ -289,16 +326,16 @@ const ViewForm = () => {
                     </Table>
                 </TableContainer>
                 <Box className='export-container'>
-                    <Typography className='export-text'>Export to:</Typography>
-                    <Button variant='outlined' onClick={() => exportTable('csv')} className='export'>
+                    <Typography variant='body2' className='export-text'>Export to:</Typography>
+                    <Button variant='contained' onClick={() => exportTable('csv')} className='export'>
                         CSV
                     </Button>
-                    <Button variant='outlined' onClick={() => exportTable('json')} className='export'>
+                    <Button variant='contained' onClick={() => exportTable('json')} className='export'>
                         JSON
                     </Button>
                 </Box>
             </Paper>
-        </div>
+        </ThemeProvider>
     );
 };
 

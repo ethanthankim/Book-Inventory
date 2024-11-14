@@ -1,16 +1,26 @@
+:root {
+  --primary: rgba(140, 255, 140, 0.25);
+  --secondary:rgb(240, 240, 240);
+}
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-image: linear-gradient(white, var(--primary))
+}
 .inputs-bar {
-  margin: 50px;
+  margin: 30px;
   display: flex;
   gap: 40px;
   align-items: center;
   justify-self: center;
   width: 85%;
-  background-color: lightblue;
+  height: 100px;
 }
 .inputs {
   display: flex;
   gap: 10px;
-  width: 700px;
+  width: 800px;
   /* background-color: lightgreen; */
 }
 .input-field {
@@ -18,22 +28,31 @@
 }
 .submit-buttons {
   display: flex;
-  margin-right: 10px;
   gap: 10px;
 }
-/* .input-field, .date-picker-field {
-  padding: 0;
-  margin: 0;
-  display: inline-block;
-  vertical-align: middle;
-} */
+.submit-btn {
+  width: 140px;
+  height: 50px;
+}
  .toolbar {
   display: flex;
   justify-content: space-between;
+  background-color: var(--secondary);
+ }
+ .toolbar-icons {
+  display: flex;
+  gap: 20px;
+  background-color: var(--primary);
+  padding: 5px;
+  border-radius: 50px;
  }
 .data-table {
   margin: 50px;
   overflow: hidden;
+  border: 1px inset rgba(0, 0, 0, 0.3);
+}
+.table-head {
+  background-color: var(--secondary) !important;
 }
 .export-container {
   display: flex;

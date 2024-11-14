@@ -4,13 +4,13 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 
 import TextInput from './TextInput';
-import SelectInput from './SelectInput';
+// import SelectInput from './SelectInput';
 import DateInput from './DateInput';
 
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
-import { Typography } from '@mui/material';
+import { Autocomplete, TextField, Typography } from '@mui/material';
 import {Dialog, DialogContent, DialogActions } from '@mui/material';
 
 
@@ -66,6 +66,7 @@ const AddBookForm = () => {
     /* Handler Functions */
 
     const handleSubmit = (e) => {
+        console.log(book)
         e.preventDefault();
         if (!book.title || !book.author || !book.date || !book.isbn) {
             setMessage('Missing one or more required fields.');
@@ -78,16 +79,17 @@ const AddBookForm = () => {
         addBook();
     }
     const handleChange = (e) => {
+        if (!e || !e.target) return;
         const {name, value} = e.target
         setBook({
             ...book,
             [name]: value
         })
     };
-    const handleSelect = (e) => {
+    const handleSelect = (value) => {
         setBook({
             ...book,
-            genre: e.target.value
+            genre: value
         })
     };
     const handleDate = (date) => {
@@ -108,7 +110,9 @@ const AddBookForm = () => {
             date:'',
             isbn:''
         })
+        console.log(book);
     }
+    
     return (
         <div>
             <Box
@@ -140,11 +144,24 @@ const AddBookForm = () => {
                             value={book.author}/>
                     </Grid>
                     <Grid size={4}>
-                        <SelectInput
+                        {/* <SelectInput
                             options={genres}
                             label='Genre'
+                            required={true}
                             value={book.genre}
-                            change={handleSelect} />
+                            change={handleSelect} /> */}
+                        <Autocomplete
+                            options={genres}
+                            autoSelect
+                            freeSolo
+                            name='genre'
+                            value={book.genre}
+                            onChange={(e,value) => handleSelect(value)}
+                            onInputChange={handleChange}
+                            renderInput={(params) => (
+                                <TextField {...params} required label='Genre' name='genre'/>
+                            )}
+                        />
                     </Grid>
                     <Grid size={4}>
                         <DateInput
@@ -163,10 +180,10 @@ const AddBookForm = () => {
                     </Grid>
                 </Grid>
                 <Box className='submit-buttons'>
-                    <Button type='submit' variant='contained'>
+                    <Button className='submit-btn' type='submit' variant='contained'>
                         Add Book
                     </Button>
-                    <Button onClick={clearInputs} variant='outlined'>
+                    <Button className='submit-btn' onClick={clearInputs} variant='outlined'>
                         Clear
                     </Button>
                 </Box>
