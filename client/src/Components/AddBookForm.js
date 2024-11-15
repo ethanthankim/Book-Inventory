@@ -28,8 +28,17 @@ const AddBookForm = () => {
     const [error, setError] = useState(false);
     const [open, setOpen] = useState(false);
 
+    // just need a state variable to change any time a new book is added so it calls fetchGenres again
+    const [updateGenres, setUpdateGenres] = useState(true);
+
     /* API Calls */
+    /*
+        Get list of distinct genres to be used as menu select options.
+        When a new book is added, fetchGenres is called again to update the list
+        TODO: The same fetchGenres is defined in both forms so maybe they can just be passed in by ViewForm?
+    */
     useEffect(() => {
+        console.log("Generating genres");
         const fetchGenres = async () => {
             try {
                 const response = await axios.get(`${path}/genres`);
@@ -40,7 +49,8 @@ const AddBookForm = () => {
             }
         };
         fetchGenres();
-    }, []);
+    }, [updateGenres]);
+
     const addBook = async () => {
         try {
             const response = await axios.post(`${path}/addBook`, {
@@ -54,6 +64,7 @@ const AddBookForm = () => {
             setError(false);
             console.log('Book added successfully:', response.data);
             clearInputs();
+            setUpdateGenres(!updateGenres);
         } catch (error) {
             console.error('Error adding book:', error);
             setMessage(error.response.data);
@@ -68,7 +79,7 @@ const AddBookForm = () => {
     const handleSubmit = (e) => {
         console.log(book)
         e.preventDefault();
-        if (!book.title || !book.author || !book.date || !book.isbn) {
+        if (!book.title || !book.author || !book.genre || !book.date || !book.isbn) {
             setMessage('Missing one or more required fields.');
             setError(true);
             setOpen(true);

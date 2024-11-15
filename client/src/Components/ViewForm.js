@@ -2,13 +2,21 @@ import React, { useEffect, useState } from 'react';
 import '../App.css';
 import dayjs from 'dayjs';
 import axios from 'axios';
+
+//Components
 import TextInput from './TextInput';
 import SelectInput from './SelectInput';
 import DateInput from './DateInput';
 import AddBookForm from './AddBookForm';
 
+// MUI
 import { createTheme, ThemeProvider } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid2';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -16,10 +24,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid2';
-import { Toolbar, Typography, Tooltip, IconButton} from '@mui/material';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+
+// MUI Icons
 import FilterListIcon from '@mui/icons-material/FilterList';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -76,6 +84,7 @@ const ViewForm = () => {
 
     /* API Calls */
     useEffect(() => {
+        console.log("Generating genres");
         const fetchGenres = async () => {
             try {
                 const response = await axios.get(`${path}/genres`);
@@ -86,7 +95,7 @@ const ViewForm = () => {
             }
         };
         fetchGenres();
-    }, []);
+    }, [showFilters]);
     const getBooks = async(title, author, genre, start, end, isbn, order, asc) => {
         try {
             const response = await axios.get(`${path}/viewBooks`, {
@@ -292,6 +301,14 @@ const ViewForm = () => {
                     </Box>
                 )}
                 {showAddForm && <AddBookForm />}
+
+                {/* 
+                    At the moment, the table is in the same component as ViewForm.
+                    The showAddForm is easy to be conditionally rendered when the plus icon is clicked
+                    but the ViewForm being conditionally rendered looks messy
+                    TODO: separate the table from the view form component.
+                */}
+
                 <TableContainer component={Paper} sx={{maxHeight: 350}}>
                     <Table stickyHeader>
                         <TableHead>

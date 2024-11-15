@@ -31,17 +31,9 @@ app.get('/test-db', (req, res) => {
     });
 });
 
-app.get('/allBooks', (req, res) => {
-    db.query('SELECT * FROM Books', (err, results) => {
-        if (err) {
-            console.error('Error with test query:', err);
-            return res.status(500).send('Database connection error');
-        }
-        res.json(results);
-    });
-});
+// Request for viewing books in database with filtering
 app.get('/viewBooks', (req, res) => {
-    console.log("Request query", req.query);
+    // console.log("Request query", req.query);
     const {title, author, genre, start, end, isbn, order, asc} = req.query;
     let query = `
         SELECT * FROM Books
@@ -73,6 +65,7 @@ app.get('/viewBooks', (req, res) => {
     });
 });
 
+// Get the list of genres currently in database to be used as the select menu options
 app.get('/genres', (req, res) => {
     db.query('SELECT DISTINCT Genre FROM Books ORDER BY Genre ASC', (err, results) => {
         if (err) {
@@ -83,6 +76,7 @@ app.get('/genres', (req, res) => {
     });
 });
 
+// Request for adding books to the database
 app.post('/addBook', (req, res) => {
     const { title, author, genre, publication_date, isbn } = req.body;
     const query = 'INSERT INTO Books (title, author, genre, publication_date, isbn) VALUES (?, ?, ?, ?, ?)';
